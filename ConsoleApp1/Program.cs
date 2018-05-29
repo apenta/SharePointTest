@@ -25,41 +25,64 @@ namespace ConsoleApp1
             {
                 // SharePoint Online Credentials  
                 clientContext.Credentials = new SharePointOnlineCredentials(userName, password);
+
                 // Get the SharePoint web  
                 Web web = clientContext.Web;
+                ListCollection collList = web.Lists;
+
                 // Load the Web properties  
                 clientContext.Load(web);
+
                 // Execute the query to the server.  
                 clientContext.ExecuteQuery();
+
                 // Web properties - Display the Title and URL for the web  
                 Console.WriteLine("Title: " + web.Title + "; URL: " + web.Url);
                 //Console.ReadLine();
 
-                //var lists = web.Lists;
-                //clientContext.Load(lists);
-                //clientContext.ExecuteQuery();
-                //Console.Read();
-                //Console.WriteLine(lists);
 
-                Microsoft.SharePoint.Client.List spList = clientContext.Web.Lists.GetByTitle("MicroFeed");
-                clientContext.Load(spList);
+                ListCreationInformation lci1 = new ListCreationInformation();
+                lci1.Title = "New Discussions";
+                lci1.TemplateType = (int)ListTemplateType.DiscussionBoard;
+                web.Lists.Add(lci1);
+
+                ListCreationInformation lci2 = new ListCreationInformation();
+                lci2.Title = "Old Discussions";
+                lci2.TemplateType = (int)ListTemplateType.DiscussionBoard;
+                web.Lists.Add(lci2);
+
+                clientContext.Load(collList);
                 clientContext.ExecuteQuery();
 
+                Console.WriteLine("Lists on the current site:\n\n");
+                foreach (List targetList in collList)
+                Console.WriteLine(targetList.Title);
 
-                if (spList != null && spList.ItemCount > 0)
-                {
-                    Microsoft.SharePoint.Client.CamlQuery camlQuery = new CamlQuery();
-                    camlQuery.ViewXml =
-                        @"<View>
-                            <ViewFields><FieldRef Name= 'TemplateTitle' /></ViewFields>
-                          </View>";
+                ////var lists = web.Lists;
+                ////clientContext.Load(lists);
+                ////clientContext.ExecuteQuery();
+                ////Console.Read();
+                ////Console.WriteLine(lists);
 
-                    ListItemCollection listItems = spList.GetItems(camlQuery);
-                    clientContext.Load(listItems);
-                    clientContext.ExecuteQuery();
-                    Console.WriteLine(listItems);
-                    Console.ReadLine();
-                }
+                //Microsoft.SharePoint.Client.List spList = clientContext.Web.Lists.GetByTitle("MicroFeed");
+                //clientContext.Load(spList);
+                //clientContext.ExecuteQuery();
+
+
+                //if (spList != null && spList.ItemCount > 0)
+                //{
+                //    Microsoft.SharePoint.Client.CamlQuery camlQuery = new CamlQuery();
+                //    camlQuery.ViewXml =
+                //        @"<View>
+                //            <ViewFields><FieldRef Name= 'Title' /></ViewFields>
+                //          </View>";
+
+                //    ListItemCollection listItems = spList.GetItems(camlQuery);
+                //    clientContext.Load(listItems);
+                //    clientContext.ExecuteQuery();
+                //    Console.WriteLine(listItems);
+                //    Console.ReadLine();
+                //}
 
             }
         }
