@@ -41,7 +41,7 @@ namespace ConsoleApp1
                 //Console.Read();
                 //Console.WriteLine(lists);
 
-                Microsoft.SharePoint.Client.List spList = clientContext.Web.Lists.GetByTitle("List Template Gallery");
+                Microsoft.SharePoint.Client.List spList = clientContext.Web.Lists.GetByTitle("MicroFeed");
                 clientContext.Load(spList);
                 clientContext.ExecuteQuery();
 
