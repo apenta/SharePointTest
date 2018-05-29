@@ -4,88 +4,100 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security;
-using SPClient=Microsoft.SharePoint.Client;
+using SPClient = Microsoft.SharePoint.Client;
 using Microsoft.SharePoint;
 using Microsoft.ProjectServer.Client;
 using Microsoft.SharePoint.Client;
-
+using System.IO;
 
 namespace ConsoleApp1
 {
     class Program
     {
+
+
         static void Main(string[] args)
         {
+            string filePath = "C:\\Users\\pentaa\\Desktop\\TEST FILE.docx";
+            string title = filePath.Split('\\').Reverse().First();
+
+
+            //// Create a memory stream from those bytes.
+            //using (MemoryStream memory = new MemoryStream(file))
+            //{
+            //    // Use the memory stream in a binary reader.
+            //    using (BinaryReader reader = new BinaryReader(memory))
+            //    {
+            //        // Read in each byte from memory.
+            //        for (int i = 0; i < file.Length; i++)
+            //        {
+            //            byte result = reader.ReadByte();
+            //            //Console.WriteLine(result);
+            //        }
+            //    }
+
+            //}
             string userName = "annapenta@lexmarktest.onmicrosoft.com";
             Console.WriteLine("Enter your password.");
             SecureString password = GetPassword();
             // ClienContext - Get the context for the SharePoint Online Site  
             // SharePoint site URL - https://lexmarktest.sharepoint.com 
-            using (var clientContext = new ClientContext("https://lexmarktest.sharepoint.com"))
+            using (var clientContext = new ClientContext("https://lexmarktest.sharepoint.com/sites/initialtest"))
             {
                 // SharePoint Online Credentials  
                 clientContext.Credentials = new SharePointOnlineCredentials(userName, password);
 
                 // Get the SharePoint web  
                 Web web = clientContext.Web;
-                ListCollection collList = web.Lists;
+                //ListCollection collList = web.Lists;
+                var list = web.GetList("sites/initialtest/Shared%20Documents");
 
                 // Load the Web properties  
-                clientContext.Load(web);
+                clientContext.Load(list);
 
                 // Execute the query to the server.  
                 clientContext.ExecuteQuery();
 
-                // Web properties - Display the Title and URL for the web  
-                Console.WriteLine("Title: " + web.Title + "; URL: " + web.Url);
-                //Console.ReadLine();
+                //Web properties -Display the Title and URL for the web
 
+                //Console.WriteLine("Title: " + web.Title + "; URL: " + web.Url);
+                Console.WriteLine("Title: " + list.Title);
 
-                ListCreationInformation lci1 = new ListCreationInformation();
-                lci1.Title = "New Discussions";
-                lci1.TemplateType = (int)ListTemplateType.DiscussionBoard;
-                web.Lists.Add(lci1);
+                FileCreationInformation file1 = new FileCreationInformation();
+                byte[] file = System.IO.File.ReadAllBytes(filePath);
 
-                ListCreationInformation lci2 = new ListCreationInformation();
-                lci2.Title = "Old Discussions";
-                lci2.TemplateType = (int)ListTemplateType.DiscussionBoard;
-                web.Lists.Add(lci2);
+                file1.Content = file;
+                file1.Url = "https://lexmarktest.sharepoint.com/sites/initialtest" + "/Shared%20Documents/" + title;
+                file1.Overwrite = true;
+                var viewFile = list.RootFolder.Files.Add(file1);
+                viewFile.ListItemAllFields["Title"] = "test";
+                viewFile.ListItemAllFields["Created"] = DateTime.Now.AddDays(-1);
+                viewFile.ListItemAllFields["Author"] = "testone@lexmarktest.onmicrosoft.com";
 
-                clientContext.Load(collList);
+                viewFile.ListItemAllFields.Update();
+
                 clientContext.ExecuteQuery();
 
-                Console.WriteLine("Lists on the current site:\n\n");
-                foreach (List targetList in collList)
-                Console.WriteLine(targetList.Title);
 
-                ////var lists = web.Lists;
-                ////clientContext.Load(lists);
-                ////clientContext.ExecuteQuery();
-                ////Console.Read();
-                ////Console.WriteLine(lists);
+                ////Fake list number 1 that will be added
+                //ListCreationInformation lci1 = new ListCreationInformation();
+                //lci1.Title = "test";
+                //lci1.TemplateType = (int)ListTemplateType.DocumentLibrary;
+                ////lci1.Url = @"https://lexmarktest.sharepoint.com/sites/initialtest/Shared%20Documents/Forms/AllItems.aspx";
+                //web.Lists.Add(lci1);
 
-                //Microsoft.SharePoint.Client.List spList = clientContext.Web.Lists.GetByTitle("MicroFeed");
-                //clientContext.Load(spList);
+                //clientContext.Load(collList);
                 //clientContext.ExecuteQuery();
 
-
-                //if (spList != null && spList.ItemCount > 0)
-                //{
-                //    Microsoft.SharePoint.Client.CamlQuery camlQuery = new CamlQuery();
-                //    camlQuery.ViewXml =
-                //        @"<View>
-                //            <ViewFields><FieldRef Name= 'Title' /></ViewFields>
-                //          </View>";
-
-                //    ListItemCollection listItems = spList.GetItems(camlQuery);
-                //    clientContext.Load(listItems);
-                //    clientContext.ExecuteQuery();
-                //    Console.WriteLine(listItems);
-                //    Console.ReadLine();
-                //}
-
+                //Console.WriteLine("Lists on the current site:\n\n");
+                //foreach (List targetList in collList)
+                //    Console.WriteLine(targetList.Title);
+                //Console.ReadLine();
             }
+
+
         }
+
         private static SecureString GetPassword()
         {
             ConsoleKeyInfo info;
@@ -102,6 +114,9 @@ namespace ConsoleApp1
             while (info.Key != ConsoleKey.Enter);
             return securePassword;
         }
+
+
+
+
     }
 }
-
